@@ -344,6 +344,52 @@ td input,td select{background:transparent!important}
 /* Abrechnungsblätter und PDF-Vorlagen bleiben immer hell wie Papier */
 .sheet,body>div[style*="-10000px"]{--card:#fff;--solid:#fff;--ink:#121212;--mute:#555;--line:#dddddd;--pos:#16a34a;--neg:#e0245e;--field:#fff;background:#fff;color:#121212}
 :root .sheet .fc1{color:#0f4761}:root .sheet .fc2{color:#595959}
+/* ===== Gestaltung v3: ruhiger, größere Tippflächen ===== */
+.btn,.subnav button,.objbar .back,select,input:not([type=checkbox]):not([type=radio]){min-height:44px}
+.x{min-width:44px;min-height:44px}
+button[data-pt]{min-height:44px;margin:4px 8px 4px 0}
+.objbar [data-upd]{min-height:40px;font-size:13px;padding:0 14px;margin:0 0 0 auto;opacity:.9}
+.sub{font-size:13px;color:color-mix(in srgb,var(--ink) 68%,var(--card))}
+table.stack td::before{font-size:12px}
+@media (min-width:1100px){.tabs::before{max-width:196px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+@media (min-width:761px) and (max-width:1099px){.tabs button{font-size:12px}}
+@media (max-width:760px) and (min-width:521px){.tabs button{font-size:10.5px}}
+@media (max-width:520px){.tabs button{font-size:10px}}
+/* seitlich scrollbare Tabellen: Schattenrand zeigt, dass es weitergeht */
+.scroll.ovr{box-shadow:inset -18px 0 14px -14px rgba(16,24,40,.30)}
+.scroll.ovl{box-shadow:inset 18px 0 14px -14px rgba(16,24,40,.30)}
+.scroll.ovl.ovr{box-shadow:inset 18px 0 14px -14px rgba(16,24,40,.30),inset -18px 0 14px -14px rgba(16,24,40,.30)}
+.card .sub+.row{margin-top:12px}
+/* Ausgaben: Namen und Umlage nicht abschneiden */
+#t-a table:not(.stack) td:first-child input{min-width:210px}
+@media (max-width:700px){#t-a table.stack td:first-child,#t-a table.stack td[data-label="Umlage"]{grid-column:1/-1}}
+/* Hinweislisten: eine Zeile je Hinweis */
+.chk{align-items:center}
+.chk .dot{flex:none;width:10px;height:10px;border-radius:50%;background:#c27c0e;margin-right:2px}
+.chk.l2 .dot{background:var(--neg)}
+.chk .t b{font-weight:700}
+.chk .mt{display:none;color:color-mix(in srgb,var(--ink) 75%,var(--card))}
+.chk.open .mt{display:inline}
+.chk .more-b{background:none;border:0;color:var(--acc);font:inherit;font-size:13px;padding:0 0 0 6px;min-height:0;cursor:pointer}
+.chk .lnk{min-height:44px;padding:0 10px;display:inline-flex;align-items:center}
+.chk .btn{margin:0 4px 0 0}
+/* leere Karten: eine Zeile */
+.card.mini{padding:12px 18px;align-self:start}
+.card.mini h2{margin:0 0 4px;font-size:15px}
+.ok-line{margin:0;color:var(--pos);font-weight:600;font-size:14px}
+.ok-line::before{content:"✓ "}
+/* Startseite */
+.ocard.all{border-style:solid!important;opacity:1}
+.ochip.r{font-size:15px;font-weight:800;padding:7px 14px}
+/* Pflichtfelder */
+.reqmsg{display:block;color:var(--neg);font-size:12px;margin-top:3px;line-height:1.3}
+#modal input.req{outline:2px solid var(--neg)}
+/* Abrechnung: Schrittband */
+.stepsbar{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;padding:0;list-style:none}
+.stepsbar button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:999px;border:1px solid var(--btnb,var(--line));background:var(--btnbg,var(--card));color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.stepsbar i{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--acc);font-style:normal;font-weight:800;font-size:14px}
+/* Auswertung: Diagramme niedriger */
+#v-ueb .viz svg{max-height:260px}
 </style>
 <script>
 /* Hell / Dunkel / Auto: eigene Einstellung, unabhängig von claude.ai */
@@ -543,7 +589,8 @@ const DAY=864e5;
 const KAT=[["Grundsteuer",1],["Gebäudeversicherung",1],["Wasser und Abwasser",1],["Müllabfuhr",1],["Straßenreinigung",1],["Allgemeinstrom",1],["Heizung (Gas, Öl, Fernwärme)",1],["Hausmeister und Reinigung",1],["Schornsteinfeger",1],["Instandhaltung und Reparaturen",0],["Verwaltung und Kontoführung",0],["Fahrtkosten",0],["Sonstiges",0]];
 const GRP=u=>u.typ==="Gewerbe"?"gew":(u.typ==="Garage"||u.typ==="Stellplatz")?"gar":"wohn";
 const TYPL={Wohnung:"Wohnung",Gewerbe:"Ladenlokal / Gewerbe",Garage:"Garage",Stellplatz:"Stellplatz"};
-const newU=(o,typ)=>({id:uid(),o,typ:typ||"Wohnung",bez:typ==="Garage"?"":typ==="Gewerbe"?"Ladenlokal":"Wohnung 1",lv:false,von:"",bis:"",km:"",bk:"",hk:""});
+const newU=(o,typ)=>({id:uid(),o,typ:typ||"Wohnung",bez:typ==="Garage"?"":typ==="Gewerbe"?"Ladenlokal":"Wohnung 1",lv:false,von:kaufVon(o),bis:"",km:"",bk:"",hk:""});
+function kaufVon(o){try{const oo=Y().o.find(x=>x.id===o);return oo&&oo.ab&&oo.ab.slice(0,4)===String(S.cur)?oo.ab:""}catch(e){return ""}}
 function ensureUnits(){if(S.mig1)return false;Object.values(S.years).forEach(Yr=>{Yr.o.forEach(o=>{if(!Yr.u.some(u=>u.o===o.id))Yr.u.push(newU(o.id))})});S.mig1=true;return true}
 function seedA(o){return KAT.map(([a,ul])=>({id:uid(),o,a,b:"",ul:!!ul,hz:/heiz/i.test(a)}))}
 function seed(){
@@ -704,15 +751,15 @@ function fillTop(){
 }
 function rObj(){const Yr=Y();
  const os=Yr.o.filter(o=>vis(o.id));
- $("t-o").innerHTML=os.length?`<table><tr><th>Kürzel</th><th>Name / Anschrift</th><th>Eigentümer seit</th><th class="n">Gebäudewert (AfA-Basis) €</th><th class="n">AfA-Satz %</th><th class="n">AfA fest €/Jahr</th><th class="n">AfA ${S.cur}</th><th></th></tr>`+os.map(o=>{const A=afa(o);return `<tr><td>${inp("o",o,"kz",{al:"Kürzel"})}</td><td>${inp("o",o,"n",{al:"Name"})}</td><td>${dinp("o",o,"ab","Eigentümer seit")}</td><td>${inp("o",o,"afaB",{num:1,al:"Gebäudewert"})}</td><td>${inp("o",o,"afaS",{num:1,al:"AfA-Satz",ph:"2"})}</td><td>${inp("o",o,"afa",{num:1,al:"AfA fest",ph:"automatisch"})}</td><td class="calc" data-c="afa:${o.id}">${eur(A.v)}${A.f<1&&!A.man?`<br>${Math.round(A.f*12)} von 12 Monaten`:""}</td><td>${del("o",o)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch kein Objekt.</p>`;
+ $("t-o").innerHTML=os.length?`<table><tr><th>Kürzel</th><th>Name / Anschrift</th><th>Kaufdatum (Eigentümer seit)</th><th class="n">Gebäudewert (AfA-Basis) €</th><th class="n">AfA-Satz %</th><th class="n">AfA fest €/Jahr</th><th class="n">AfA ${S.cur}</th><th></th></tr>`+os.map(o=>{const A=afa(o);return `<tr><td>${inp("o",o,"kz",{al:"Kürzel"})}</td><td>${inp("o",o,"n",{al:"Name"})}</td><td>${dinp("o",o,"ab","Eigentümer seit")}</td><td>${inp("o",o,"afaB",{num:1,al:"Gebäudewert"})}</td><td>${inp("o",o,"afaS",{num:1,al:"AfA-Satz",ph:"2"})}</td><td>${inp("o",o,"afa",{num:1,al:"AfA fest",ph:"automatisch"})}</td><td class="calc" data-c="afa:${o.id}">${eur(A.v)}${A.f<1&&!A.man?`<br>${Math.round(A.f*12)} von 12 Monaten`:""}</td><td>${del("o",o)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch kein Objekt.</p>`;
  const ks=Yr.k.filter(k=>vis(k.o));
  $("t-k").innerHTML=ks.length?`<table><tr><th>Objekt</th><th>Bezeichnung</th><th class="n">Rate / Monat €</th><th class="n">Zinsen im Jahr €</th><th class="n">Rate im Jahr</th><th class="n">Tilgung im Jahr</th><th></th></tr>`+ks.map(k=>`<tr><td><select data-t="k" data-id="${k.id}" data-k="o" aria-label="Objekt">${objOpts(k.o)}</select></td><td>${inp("k",k,"bez",{al:"Bezeichnung"})}</td><td>${inp("k",k,"rate",{num:1,al:"Rate pro Monat"})}</td><td>${inp("k",k,"zins",{num:1,al:"Zinsen im Jahr",ph:"lt. Bank"})}</td><td class="calc" data-c="kr:${k.id}">${eur(P(k.rate)*12)}</td><td class="calc" data-c="kt:${k.id}">${has(k.zins)?eur(P(k.rate)*12-P(k.zins)):"Zinsen fehlen"}</td><td>${del("k",k)}</td></tr>`).join("")+(()=>{const r=ks.reduce((s,k)=>s+P(k.rate),0);return `<tr class="tot"><td colspan="2">Gesamt</td><td class="n" data-c="ksum">${eur(r)}</td><td></td><td class="calc" data-c="ksumj">${eur(r*12)}</td><td></td><td></td></tr>`})()+`</table>`:`<p class="empty">Noch kein Kredit.</p>`;
 }
 function rEin(){const Yr=Y();
  const us=Yr.u.filter(u=>vis(u.o));
  const os=Yr.o.filter(o=>vis(o.id));
- $("t-u").innerHTML=os.length?os.map(o=>{const ou=Yr.u.filter(u=>u.o===o.id),tot=ou.reduce((s,u)=>{const c=unitCalc(u);return s+c.km+c.um+c.ust},0);return `<details class="card" open style="box-shadow:none"><summary>${esc((o.kz?o.kz+" · ":"")+(o.n||""))}<span class="pill" data-c="ou:${o.id}">${eur(tot)} im Jahr</span></summary><div class="cbody scroll">`+(ou.length?`<table><tr><th>Einheit</th><th>Mieter</th><th>Leerstand</th><th class="n">Kaltmiete €/Monat</th><th class="n">BK-Einnahmen €/Monat</th><th class="n">Heizkosten-Einnahmen €/Monat</th><th class="n">Im Jahr</th><th>Einzug</th><th>Auszug</th><th>Art</th><th>USt 19 %</th><th></th></tr>`+ou.map(u=>{const c=unitCalc(u);return `<tr><td><input data-t="u" data-id="${u.id}" data-k="wk" value="${esc(WK(u))}" placeholder="z. B. EG links" aria-label="Einheit (fester Name der Wohnung)"></td><td>${u.lv?`<span class="sub">Leerstand</span>`:inp("u",u,"mt",{al:"Name des Mieters",ph:"Name des Mieters"})}</td><td style="text-align:center"><input type="checkbox" data-ck="u" data-f="lv" data-id="${u.id}" ${u.lv?"checked":""} aria-label="Leerstand" title="Einheit steht leer"></td><td>${inp("u",u,"km",{num:1,al:"Kaltmiete pro Monat",ph:"0,00"})}</td><td>${inp("u",u,"bk",{num:1,al:"BK-Einnahmen pro Monat",ph:"0,00"})}</td><td>${inp("u",u,"hk",{num:1,al:"Heizkosten-Einnahmen pro Monat",ph:"0,00"})}</td><td class="calc" data-c="u:${u.id}">${eur(c.km+c.um+c.ust)}<br>${chgOn(u)?"Änderung ab "+dstr(u.chg).slice(0,6):String(c.m).replace(".",",")+" Mon."}</td><td>${dinp("u",u,"von","Einzug")}</td><td>${dinp("u",u,"bis","Auszug")}</td><td><select data-t="u" data-id="${u.id}" data-k="typ" aria-label="Art">${Object.entries(TYPL).map(([v,l])=>`<option value="${v}"${u.typ===v?" selected":""}>${l}</option>`).join("")}</select></td><td style="text-align:center">${GRP(u)==="gew"?`<input type="checkbox" data-ck="u" data-f="ust" data-id="${u.id}" ${u.ust?"checked":""} aria-label="Umsatzsteuerpflichtig vermietet" title="Umsatzsteuerpflichtig vermietet (Option nach § 9 UStG): Beträge sind netto">`:`<span class="sub">–</span>`}</td><td style="white-space:nowrap"><button class="x" data-mw="${u.id}" aria-label="Mieterwechsel oder Leerstand" title="Mieterwechsel oder Leerstand">⇄</button>${del("u",u)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch keine Einheit.</p>`)+`<button class="btn" data-addu="${o.id}" data-typ="Wohnung">Wohnung hinzufügen</button><button class="btn" data-addu="${o.id}" data-typ="Gewerbe">Ladenlokal hinzufügen</button><button class="btn" data-addu="${o.id}" data-typ="Garage">Garage hinzufügen</button></div></details>`}).join(""):`<p class="empty">Leg zuerst ein Objekt an.</p>`;
- $("t-u3").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th>Änderung ab</th><th class="n">Kaltmiete neu €/Monat</th><th class="n">BK neu €/Monat</th><th class="n">Heizkosten neu €/Monat</th><th class="n">Im Jahr</th></tr>`+us.map(u=>{const c=unitCalc(u);return `<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${dinp("u",u,"chg","Änderung ab")}</td><td>${inp("u",u,"km2",{num:1,al:"Kaltmiete neu",ph:"bisher "+(u.km||"0")})}</td><td>${inp("u",u,"bk2",{num:1,al:"BK neu",ph:"bisher "+(u.bk||"0")})}</td><td>${inp("u",u,"hk2",{num:1,al:"Heizkosten neu",ph:"bisher "+(u.hk||"0")})}</td><td class="calc" data-c="c3:${u.id}">${chgTxt(u,c)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch keine Einheit.</p>`;
+ $("t-u").innerHTML=os.length?os.map(o=>{const ou=Yr.u.filter(u=>u.o===o.id),tot=ou.reduce((s,u)=>{const c=unitCalc(u);return s+c.km+c.um+c.ust},0);return `<details class="card" open style="box-shadow:none"><summary>${esc((o.kz?o.kz+" · ":"")+(o.n||""))}<span class="pill" data-c="ou:${o.id}">${eur(tot)} im Jahr</span></summary><div class="cbody scroll">`+(ou.length?`<table><tr><th>Einheit</th><th>Mieter</th><th class="n">Wohnfläche m²</th><th>Leerstand</th><th class="n">Kaltmiete €/Monat</th><th class="n">Nebenkosten-Vorauszahlung €/Monat</th><th class="n">Heizkosten-Vorauszahlung €/Monat</th><th class="n">Im Jahr</th><th>Mietbeginn (Einzug)</th><th>Mietende (Auszug)</th><th>Art</th><th>USt 19 %</th><th></th></tr>`+ou.map(u=>{const c=unitCalc(u);return `<tr><td><input data-t="u" data-id="${u.id}" data-k="wk" value="${esc(WK(u))}" placeholder="z. B. EG links" aria-label="Einheit (fester Name der Wohnung)"></td><td>${u.lv?`<span class="sub">Leerstand</span>`:inp("u",u,"mt",{al:"Name des Mieters",ph:"Name des Mieters"})}</td><td>${inp("u",u,"wf",{num:1,al:"Wohnfläche in m²",ph:"m²"})}</td><td style="text-align:center"><input type="checkbox" data-ck="u" data-f="lv" data-id="${u.id}" ${u.lv?"checked":""} aria-label="Leerstand" title="Einheit steht leer"></td><td>${inp("u",u,"km",{num:1,al:"Kaltmiete pro Monat",ph:"0,00"})}</td><td>${inp("u",u,"bk",{num:1,al:"Nebenkosten-Vorauszahlung pro Monat",ph:"0,00"})}</td><td>${inp("u",u,"hk",{num:1,al:"Heizkosten-Vorauszahlung pro Monat",ph:"0,00"})}</td><td class="calc" data-c="u:${u.id}">${eur(c.km+c.um+c.ust)}<br>${chgOn(u)?"Änderung ab "+dstr(u.chg).slice(0,6):String(c.m).replace(".",",")+" Mon."}</td><td>${dinp("u",u,"von","Mietbeginn")}</td><td>${dinp("u",u,"bis","Mietende")}</td><td><select data-t="u" data-id="${u.id}" data-k="typ" aria-label="Art">${Object.entries(TYPL).map(([v,l])=>`<option value="${v}"${u.typ===v?" selected":""}>${l}</option>`).join("")}</select></td><td style="text-align:center">${GRP(u)==="gew"?`<input type="checkbox" data-ck="u" data-f="ust" data-id="${u.id}" ${u.ust?"checked":""} aria-label="Umsatzsteuerpflichtig vermietet" title="Umsatzsteuerpflichtig vermietet (Option nach § 9 UStG): Beträge sind netto">`:`<span class="sub">–</span>`}</td><td style="white-space:nowrap"><button class="x" data-mw="${u.id}" aria-label="Mieterwechsel oder Leerstand" title="Mieterwechsel oder Leerstand">⇄</button>${del("u",u)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch keine Einheit.</p>`)+`<button class="btn" data-addu="${o.id}" data-typ="Wohnung">Wohnung hinzufügen</button><button class="btn" data-addu="${o.id}" data-typ="Gewerbe">Ladenlokal hinzufügen</button><button class="btn" data-addu="${o.id}" data-typ="Garage">Garage hinzufügen</button></div></details>`}).join(""):`<p class="empty">Leg zuerst ein Objekt an.</p>`;
+ $("t-u3").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th>Änderung ab</th><th class="n">Kaltmiete neu €/Monat</th><th class="n">BK neu €/Monat</th><th class="n">Heizkosten neu €/Monat</th><th class="n">Im Jahr</th></tr>`+us.map(u=>{const c=unitCalc(u);return `<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${dinp("u",u,"chg","Änderung ab")}</td><td>${inp("u",u,"km2",{num:1,al:"Kaltmiete neu",ph:"bisher "+(u.km||"0")})}</td><td>${inp("u",u,"bk2",{num:1,al:"Nebenkosten neu",ph:"bisher "+(u.bk||"0")})}</td><td>${inp("u",u,"hk2",{num:1,al:"Heizkosten neu",ph:"bisher "+(u.hk||"0")})}</td><td class="calc" data-c="c3:${u.id}">${chgTxt(u,c)}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch keine Einheit.</p>`;
  $("t-u2").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th class="n">Kaltmiete tatsächlich erhalten €/Jahr</th><th class="n">BK tatsächlich erhalten €/Jahr</th><th class="n">Heizkosten tatsächlich erhalten €/Jahr</th></tr>`+us.map(u=>{const c=unitCalc(u);return `<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${inp("u",u,"kmIst",{num:1,al:"Kaltmiete erhalten",ph:"berechnet "+eur(c.kmS)})}</td><td>${inp("u",u,"bkIst",{num:1,al:"BK erhalten",ph:"berechnet "+eur(c.bkS)})}</td><td>${inp("u",u,"hkIst",{num:1,al:"Heizkosten erhalten",ph:"berechnet "+eur(c.hkS)})}</td></tr>`}).join("")+`</table>`:`<p class="empty">Noch keine Einheit.</p>`;
  if(us.some(u=>has(u.kmIst)||has(u.bkIst)||has(u.hkIst)||has(u.umIst)))$("adv-ist").open=true;
  rBu();
@@ -1166,7 +1213,7 @@ function sheet(r,T){
  const bk=r.bkv,hk=r.hkv,bn=m.bn===""||m.bn==null?(bi.length&&r.mon>0?Math.round(P(bi)/r.mon/5)*5:n(m.bb)):n(m.bn),hn=m.hn===""||m.hn==null?(hi.length&&r.monH>0?Math.round(P(hi)/r.monH/5)*5:n(m.hb)):n(m.hn),ny=String(e.getUTCFullYear()+1).slice(2);
  const nf=(l,o,w)=>`<tr><td>${l}</td><td class="n">${eur(o)}</td><td class="n">${eur(w)}</td><td class="n">${eur(w-o)}</td><td>monatlich</td></tr>`;
  const p1=`<article class="sheet"><div class="from">${esc(S.abs)}</div><p style="white-space:pre-line;margin:6px 0 18px">${esc(m.an||m.n)}</p>${top(1)}<h3>1. Ausgaben</h3><div class="scroll"><table><tr><th>Konto</th><th>Verteilung und Nutzungszeitraum</th><th class="n">Gesamtfläche (m²)</th><th class="n">Wohnfläche (m²)</th><th class="n">Ausgaben gesamt</th><th class="n">Ihr Anteil</th></tr><tr><th colspan="6">a) Betriebskosten</th></tr>${bi.map(rw).join("")}<tr><td colspan="4" class="n">Zwischensumme</td><td class="n">${eur(G(bi))}</td><td class="n">${eur(P(bi))}</td></tr>${hi.length?`<tr><th colspan="6">b) Heizkosten</th></tr>${hi.map(rw).join("")}`:""}<tfoot><tr><td colspan="4">Ausgaben gesamt</td><td class="n">${eur(G(r.items))}</td><td class="n">${eur(r.cost)}</td></tr></tfoot></table></div><h3>2. Ihre Vorauszahlungen</h3><div class="scroll"><table><tr><th>Konto</th><th class="n">Gesamt</th></tr><tr><td>BK-Vorauszahlungen (${r.tb})</td><td class="n">${eur(bk)}</td></tr><tr><td>HK-Vorauszahlung (${r.th})</td><td class="n">${eur(hk)}</td></tr><tfoot><tr><td>Gesamt</td><td class="n">${eur(bk+hk)}</td></tr></tfoot></table></div></article>`;
- const p2=`<article class="sheet">${top(2)}<h3>3. Ergebnis der Abrechnung</h3><div class="scroll"><table><tr><td>Ausgaben gesamt</td><td class="n">${eur(r.cost)}</td></tr><tr><td>abzgl. Vorauszahlungen gesamt</td><td class="n">−${eur(bk+hk)}</td></tr><tfoot><tr><td>${r.res>0?"Ihre Nachzahlung":"Ihr Guthaben"}</td><td class="n">${eur(Math.abs(r.res))}</td></tr></tfoot></table></div>${S.nf===false?"":`<h3>4. Miete / Neufestsetzung der Vorauszahlungsbeträge</h3><div class="scroll"><table><tr><th>Sollbetrag</th><th class="n">bisher</th><th class="n">ab 1.1.${ny}</th><th class="n">Differenz</th><th></th></tr>${nf("BK-Vorauszahlungen",r.cbb,bn)}${nf("HK-Vorauszahlung",r.chh,hn)}<tfoot>${nf("Gesamt",r.cbb+r.chh,bn+hn)}</tfoot></table></div>`}</article>`;
+ const p2=`<article class="sheet">${top(2)}<h3>3. Ergebnis der Abrechnung</h3><div class="scroll"><table><tr><td>Ausgaben gesamt</td><td class="n">${eur(r.cost)}</td></tr><tr><td>abzgl. Vorauszahlungen gesamt</td><td class="n">−${eur(bk+hk)}</td></tr><tfoot><tr><td>${r.res>0?"Ihre Nachzahlung":"Ihr Guthaben"}</td><td class="n">${eur(Math.abs(r.res))}</td></tr></tfoot></table></div>${S.nf===false||m.ex?"":`<h3>4. Miete / Neufestsetzung der Vorauszahlungsbeträge</h3><div class="scroll"><table><tr><th>Sollbetrag</th><th class="n">bisher</th><th class="n">ab 1.1.${ny}</th><th class="n">Differenz</th><th></th></tr>${nf("BK-Vorauszahlungen",r.cbb,bn)}${nf("HK-Vorauszahlung",r.chh,hn)}<tfoot>${nf("Gesamt",r.cbb+r.chh,bn+hn)}</tfoot></table></div>`}</article>`;
  const yr=e.getUTCFullYear(),f0=von&&von>a?m.von:S.start,f1=bis&&bis<e?m.bis:S.end,cb=P(bi),ch=P(hi),rb=cb-bk,rh=ch-hk,hasH=hi.length>0||hk>0,lab=x=>x>0?"Nachzahlung":"Guthaben";
   const hdiff=h0!==f0||h1!==f1;
  const kv=(l,v)=>v?`<b>${l}:</b> ${esc(v)}<br>`:"";
@@ -1253,7 +1300,7 @@ function buildDocx(rows,vac,T){
   out.push(Tx("Betriebskostenabrechnung – Seite 2",{bold:true,size:22,before:360,after:100,keep:true}),
    Tx("3. Ergebnis der Abrechnung",{bold:true,size:26,after:80,keep:true}),
    tbl([6500,2572],[["Ausgaben gesamt",eur(r.cost)],["abzgl. Vorauszahlungen gesamt","−"+eur(c.bk+c.hk)],[{t:res>0?"Ihre Nachzahlung":"Ihr Guthaben",bold:true},{t:eur(Math.abs(res)),bold:true}]],{right:[1],keep:S.nf===false?"rows":"all"}),
-   ...(S.nf===false?[]:[Tx("4. Miete / Neufestsetzung der Vorauszahlungsbeträge",{bold:true,size:26,before:240,after:80,keep:true}),
+   ...(S.nf===false||(r.m&&r.m.ex)?[]:[Tx("4. Miete / Neufestsetzung der Vorauszahlungsbeträge",{bold:true,size:26,before:240,after:80,keep:true}),
    grid([2900,1500,1600,1500,1572],["Sollbetrag","bisher","ab 1.1."+ny,"Differenz",""],[nf("BK-Vorauszahlungen",r.cbb,c.bn),nf("HK-Vorauszahlung",r.chh,c.hn),nf("Gesamt",r.cbb+r.chh,c.bn+c.hn)],[1,2,3],"rows")]));
  });
  vac.forEach((v,k)=>{const r=v.row,c=ctx(r),m=c.m;
@@ -1345,8 +1392,8 @@ function wfSum(id){const y=S.cur,g={};Y().u.filter(u=>u.o===id&&GRP(u)!=="gar").
  let t=0;Object.values(g).forEach(rs=>{let mx=0;rs.forEach(r=>{const at=rs.filter(x=>x.a<=r.a&&x.b>=r.a).reduce((s,x)=>s+x.f,0);if(at>mx)mx=at});t+=mx});return Math.round(t*100)/100}
 function toBK(){const Yr=Y(),y=S.cur,g=G();
  return Object.assign({},g,{cur:y,sel:S.sel,start:Yr.bkStart||y+"-01-01",end:Yr.bkEnd||y+"-12-31",dat:Yr.dat||"",nf:g.nf,
-  o:Yr.o.map(o=>({id:o.id,n:o.adr||((o.kz?o.kz+" ":"")+(o.n||"")),f:has(o.wf)?nstr(o.wf):String(wfSum(o.id)),hvon:o.hvon||"",hbis:o.hbis||"",hk:has(o.hkg)?nstr(o.hkg):(hzSum(o.id)?String(hzSum(o.id)):"")})),
-  m:Yr.u.filter(u=>GRP(u)!=="gar").map(u=>{const ch=!!(u.chg&&(has(u.bk2)||has(u.hk2)));return {o:u.o,e:WK(u)||TYPL[u.typ]||"",en:WK(u)||TYPL[u.typ]||"",n:u.lv?"Leerstand":((u.an||"").split(/\n|,/)[0].trim()||u.mt||"Mieter "+(u.bez||TYPL[u.typ]||"")),lv:!!u.lv,nb:false,f:nstr(wfOf(u)),von:u.von||"",bis:u.bis||"",bb:nstr(u.bk),hb:nstr(u.hk),an:u.an||"",bn:nstr(u.bn),hn:nstr(u.hn),hk:!u.lv?nstr(u.hkM):"",cd:ch?u.chg:"",cb:ch?nstr(u.bk2):"",ch:ch?nstr(u.hk2):"",pb:nstr(u.bkIst),ph:nstr(u.hkIst)}}),
+  o:Yr.o.map(o=>({id:o.id,n:o.adr||o.n||o.kz||"",f:has(o.wf)?nstr(o.wf):String(wfSum(o.id)),hvon:o.hvon||"",hbis:o.hbis||"",hk:has(o.hkg)?nstr(o.hkg):(hzSum(o.id)?String(hzSum(o.id)):"")})),
+  m:Yr.u.filter(u=>GRP(u)!=="gar").map(u=>{const ch=!!(u.chg&&(has(u.bk2)||has(u.hk2)));return {o:u.o,e:WK(u)||TYPL[u.typ]||"",en:WK(u)||TYPL[u.typ]||"",n:u.lv?"Leerstand":((u.an||"").split(/\n|,/)[0].trim()||u.mt||"Mieter "+(u.bez||TYPL[u.typ]||"")),lv:!!u.lv,ex:exU(u),nb:false,f:nstr(wfOf(u)),von:u.von||"",bis:u.bis||"",bb:nstr(u.bk),hb:nstr(u.hk),an:u.an||"",bn:nstr(u.bn),hn:nstr(u.hn),hk:!u.lv?nstr(u.hkM):"",cd:ch?u.chg:"",cb:ch?nstr(u.bk2):"",ch:ch?nstr(u.hk2):"",pb:nstr(u.bkIst),ph:nstr(u.hkIst)}}),
   k:Yr.a.filter(a=>a.ul&&!a.hz&&P(a.b)).map(a=>({o:a.o,a:a.a||"Ohne Bezeichnung",b:String(P(a.b)),t:"b"}))})}
 function rAbrInputs(){const Yr=Y(),g=G(),y=S.cur;
  $("abr-yr").textContent=y;
@@ -1354,9 +1401,9 @@ function rAbrInputs(){const Yr=Y(),g=G(),y=S.cur;
  $("abr-s").placeholder="01.01."+y;$("abr-e").placeholder="31.12."+y;
  document.querySelectorAll("[data-g]").forEach(i=>{i.value=g[i.dataset.g]||""});$("nf").checked=g.nf!==false;
  const os=Yr.o.filter(o=>vis(o.id));
- $("abr-o").innerHTML=os.length?`<table><tr><th>Objekt</th><th>Anschrift (im Anschreiben)</th><th class="n">Gesamtwohnfläche m²</th><th>Heizkosten-Zeitraum von</th><th>bis</th><th class="n">Gesamtheizkosten €</th></tr>`+os.map(o=>`<tr><td>${esc(oLabel(o))}</td><td>${inp("o",o,"adr",{al:"Anschrift",ph:"Straße Nr., PLZ Ort"})}</td><td>${inp("o",o,"wf",{num:1,al:"Gesamtwohnfläche",ph:"Summe "+String(wfSum(o.id)).replace(".",",")})}</td><td>${dinp("o",o,"hvon","Heizkosten von")}</td><td>${dinp("o",o,"hbis","Heizkosten bis")}</td><td>${inp("o",o,"hkg",{num:1,al:"Gesamtheizkosten",ph:hzSum(o.id)?eur(hzSum(o.id)):"aus Ausgaben"})}</td></tr>`).join("")+`</table>`:`<p class="empty">Keine Objekte.</p>`;
+ $("abr-o").innerHTML=os.length?`<table><tr><th>Objekt</th><th>Anschrift (leer = Hausname)</th><th class="n">Gesamtwohnfläche m²</th><th>Heizkosten-Zeitraum von</th><th>bis</th><th class="n">Gesamtheizkosten €</th></tr>`+os.map(o=>`<tr><td>${esc(oLabel(o))}</td><td>${inp("o",o,"adr",{al:"Anschrift",ph:o.n||"Straße Nr., PLZ Ort"})}</td><td>${inp("o",o,"wf",{num:1,al:"Gesamtwohnfläche",ph:"Summe "+String(wfSum(o.id)).replace(".",",")})}</td><td>${dinp("o",o,"hvon","Heizkosten von")}</td><td>${dinp("o",o,"hbis","Heizkosten bis")}</td><td>${inp("o",o,"hkg",{num:1,al:"Gesamtheizkosten",ph:hzSum(o.id)?eur(hzSum(o.id)):"aus Ausgaben"})}</td></tr>`).join("")+`</table>`:`<p class="empty">Keine Objekte.</p>`;
  const us=Yr.u.filter(u=>vis(u.o)&&GRP(u)!=="gar");
- $("abr-m").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th class="n">Wohnfläche m²</th><th>Briefanschrift</th><th class="n">Heizkosten lt. Heizkostenabrechnung €</th><th class="n">BK neu ab ${y+1} €/Monat</th><th class="n">HK neu ab ${y+1} €/Monat</th></tr>`+us.map(u=>`<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${inp("u",u,"wf",{num:1,al:"Wohnfläche"})}</td><td>${!u.lv?`<textarea rows="3" data-t="u" data-id="${u.id}" data-k="an" placeholder="Name&#10;Straße Hausnr.&#10;PLZ Ort" aria-label="Briefanschrift" style="min-width:190px;resize:vertical">${esc(u.an)}</textarea>`:'<span class="sub">Leerstand</span>'}</td><td>${!u.lv?inp("u",u,"hkM",{num:1,al:"Heizkosten Mieter"}):""}</td><td>${!u.lv?inp("u",u,"bn",{num:1,al:"BK neu",ph:"automatisch"}):""}</td><td>${!u.lv?inp("u",u,"hn",{num:1,al:"HK neu",ph:"automatisch"}):""}</td></tr>`).join("")+`</table>`:`<p class="empty">Noch keine Wohnungen unter Einnahmen.</p>`;
+ $("abr-m").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th class="n">Wohnfläche m²</th><th>Briefanschrift</th><th class="n">Heizkosten lt. Heizkostenabrechnung €</th><th class="n">Nebenkosten neu ab ${y+1} €/Monat</th><th class="n">Heizkosten neu ab ${y+1} €/Monat</th></tr>`+us.map(u=>`<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${inp("u",u,"wf",{num:1,al:"Wohnfläche"})}</td><td>${!u.lv?`<textarea rows="3" data-t="u" data-id="${u.id}" data-k="an" placeholder="Name&#10;Straße Hausnr.&#10;PLZ Ort" aria-label="Briefanschrift" style="min-width:190px;resize:vertical">${esc(u.an)}</textarea>`:'<span class="sub">Leerstand</span>'}</td><td>${!u.lv?inp("u",u,"hkM",{num:1,al:"Heizkosten Mieter"}):""}</td><td>${!u.lv&&!exU(u)?inp("u",u,"bn",{num:1,al:"Nebenkosten neu",ph:"automatisch"}):""}</td><td>${!u.lv&&!exU(u)?inp("u",u,"hn",{num:1,al:"Heizkosten neu",ph:"automatisch"}):""}</td></tr>`).join("")+`</table>`:`<p class="empty">Noch keine Wohnungen unter Einnahmen.</p>`;
  labelize();
 }
 function rAbrOut(){document.querySelectorAll('#abr-o input[data-k="wf"]').forEach(i=>{i.placeholder="Summe "+String(wfSum(i.dataset.id)).replace(".",",")});try{BKE.set(toBK());BKE.renderOut();const nw=[...new Set(Y().u.filter(u=>vis(u.o)&&GRP(u)!=="gar"&&!P(wfOf(u))).map(u=>WK(u)))];if(nw.length)$("check").textContent+=" ACHTUNG: Bei "+nw.join(", ")+" fehlt die Wohnfläche (m²). Ohne sie werden weder Kosten noch Leerstand verteilt. Bitte oben unter „Mieter“ ergänzen."}catch(e){$("check").textContent="Abrechnung konnte nicht berechnet werden: "+(e&&e.message||e)}}
@@ -1424,7 +1471,7 @@ const chkKey=c=>c.y+"|"+c.t,chkDone=c=>!!(S.ok&&S.ok[chkKey(c)]);
 function allChecks(){return checks(S.cur).filter(c=>!chkDone(c)).sort((a,b)=>b.l-a.l)}
 function doneChecks(){return checks(S.cur).filter(chkDone)}
 const doneBox=D=>D.length?`<details class="more"><summary>${D.length} als geprüft markiert</summary><div class="cbody">${chkHtml(D)}</div></details>`:""
-function chkHtml(L,showY){return L.map(c=>`<div class="chk l${c.l}${chkDone(c)?" done":""}"><label class="cokl" title="Als geprüft markieren"><input type="checkbox" data-cok="${esc(chkKey(c))}"${chkDone(c)?" checked":""} aria-label="Als geprüft markieren"><span>geprüft</span></label><span class="t">${showY?`<span class="y">${c.y}</span>`:""}${esc(c.t)}</span>${c.fix?`<button class="btn fill" data-fix="${c.fix.y}|${c.fix.id}|${c.fix.k}|${c.fix.v}">Korrigieren</button>`:""}${c.bgo?`<button class="btn" data-bugo="${c.bgo}">Zur Zahlung</button>`:c.m?`<button class="btn" data-pgo="${c.y}|${c.m}">Zum Monat</button>`:`<button class="btn" data-cgo="${c.y}|${c.u.id}">Zur Einheit</button>`}</div>`).join("")}
+function chkHtml(L,showY){return L.map(c=>`<div class="chk l${c.l}${chkDone(c)?" done":""}"><label class="cokl" title="Als geprüft markieren"><input type="checkbox" data-cok="${esc(chkKey(c))}"${chkDone(c)?" checked":""} aria-label="Als geprüft markieren"><span>geprüft</span></label><span class="t">${showY?`<span class="y">${c.y}</span>`:""}${esc(c.t)}</span>${c.fix?`<button class="btn fill" data-fix="${c.fix.y}|${c.fix.id}|${c.fix.k}|${c.fix.v}">Korrigieren</button>`:""}${c.fixY?`<button class="btn fill" data-fixy="${c.fixY.y}|${c.fixY.k}|${c.fixY.v}">Korrigieren</button>`:""}${c.bgo?`<button class="btn" data-bugo="${c.bgo}">Zur Zahlung</button>`:c.m?`<button class="btn" data-pgo="${c.y}|${c.m}">Zum Monat</button>`:c.go?`<button class="btn" data-tgo="${c.go}">Zur Seite</button>`:c.u?`<button class="btn" data-cgo="${c.y}|${c.u.id}">Zur Einheit</button>`:""}</div>`).join("")}
 function rChk(){const L=allChecks(),D=doneChecks();["miet-chk"].forEach(id=>{const el=$(id);if(!el)return;
  el.innerHTML=(L.length?`<details class="card"${L.some(c=>c.l===2)?" open":""}><summary>${L.length} ${L.length===1?"Hinweis":"Hinweise"} zu deinen Einträgen in ${S.cur}</summary><div class="cbody">${chkHtml(L)}</div></details>`:"")+doneBox(D)})}
 
@@ -1443,7 +1490,7 @@ function rHome(){if(!$("h-kpi"))return;const n=new Date(),ny=n.getFullYear(),y=S
   yrs.forEach(z=>{const Z=S.years[z],ys=z+"-01-01",ye=z+"-12-31",gs={};
    Z.u.forEach(u=>{if(!vis(u.o))return;const k=u.o+"|"+nb(WK(u)||u.typ);(gs[k]=gs[k]||[]).push(u)});
    Object.values(gs).forEach(us=>{const iv=us.filter(u=>!u.lv).map(u=>[u.von&&u.von>ys?u.von:ys,u.bis&&u.bis<ye?u.bis:ye]).filter(x=>x[0]<=x[1]).sort((p,q)=>p[0].localeCompare(q[0]));
-    const gaps=[];let cur=ys;
+    const gaps=[];const oo0=Z.o.find(x=>x.id===us[0].o),ab0=oo0&&oo0.ab;if(ab0&&ab0.slice(0,4)>String(z))return;let cur=(ab0&&ab0.slice(0,4)===String(z)&&ab0>ys)?ab0:ys;
     iv.forEach(([f,t])=>{if(f>cur)gaps.push([cur,addD(f,-1)]);if(addD(t,1)>cur)cur=addD(t,1)});
     if(cur<=ye)gaps.push([cur,ye]);
     const u0=us[0],o=Z.o.find(x=>x.id===u0.o);
@@ -1724,10 +1771,10 @@ function mwOpen(id){const Yr=Y(),y=S.cur,u=Yr.u.find(x=>x.id===id);if(!u)return;
    if(nIn)steps.push(`Neue Zeile neuer Mieter ab <b>${dstr(n)}</b>: ${eur(P($("mw-km").value))} Kaltmiete + ${eur(P($("mw-bk").value))} BK + ${eur(P($("mw-hk").value))} Heizkosten`);
    else if(n)steps.push(`Der Einzug liegt nach ${y}. Den neuen Mieter trägst du im Jahr ${n.slice(0,4)} ein.`)}
   $("mw-new").style.opacity=nIn||!n?"1":".5";
-  $("mw-p").innerHTML=steps.length?"<b>Das passiert:</b>"+steps.map(s=>`<div>• ${s}</div>`).join(""):"";$("mw-w").innerHTML=w.join("<br>");return w.length?null:{a,n,nIn}};
- M.querySelectorAll("input").forEach(i=>i.addEventListener("input",plan));plan();
+  $("mw-p").innerHTML=steps.length?"<b>Das passiert:</b>"+steps.map(s=>`<div>• ${s}</div>`).join(""):"";$("mw-w").innerHTML=window._mwT?w.join("<br>"):"";return w.length?null:{a,n,nIn}};
+ M.querySelectorAll("input").forEach(i=>i.addEventListener("input",()=>{window._mwT=1;plan()}));window._mwT=0;plan();
  $("mw-x").onclick=closeModal;M.onclick=e=>{if(e.target===M)closeModal()};
- $("mw-go").onclick=()=>{const p=plan();if(!p)return;syncBez();const before=JSON.parse(JSON.stringify(u)),add=[];
+ $("mw-go").onclick=()=>{window._mwT=1;const p=plan();if(!p)return;syncBez();const before=JSON.parse(JSON.stringify(u)),add=[];
   const un=($("mw-e").value.trim()||WK(u));
   Object.values(S.years).forEach(Z=>Z.u.forEach(r=>{if(r.o===u.o&&(r===u||nb(WK(r))===nb(WK(u)))){if(r.mt===undefined)r.mt=(!r.lv&&!r.wk&&r.bez&&nb(r.bez)!==nb(un))?r.bez:"";r.wk=un}}));syncBez();
   if(!lv){u.bis=p.a;const ls=addD(p.a,1),le=p.n?addD(p.n,-1):"";if(ls<=ye&&(!p.n||le>=ls))add.push({id:uid(),o:u.o,typ:u.typ,bez:un,wk:un,mt:"",lv:true,von:ls,bis:p.n&&le<=ye?le:"",km:"",bk:"",hk:"",wf:wfOf(u)})}
@@ -1791,6 +1838,204 @@ const FS=(()=>{const bar=$("fsbar"),ok=!!(window.showSaveFilePicker&&window.show
   try{const p=await h.queryPermission({mode:"readwrite"});if(p==="granted")await readInto();else ui("conn")}catch(e){ui("conn")}})();
  return {queue}})();
 window.FSQ=()=>FS.queue();
+/* ===== Erweiterungen v2: Prüfungen, Kaufdatum, Assistent, Sicherungen, Aktualisieren ===== */
+const APP_VER="2026-11-24";
+function wfY(u,Yr){if(has(u.wf))return u.wf;const k=nb(WK(u)),r=Yr.u.find(x=>x.o===u.o&&nb(WK(x))===k&&has(x.wf));return r?r.wf:""}
+const nfmt=n=>String(Math.round(n*100)/100).replace(".",",");
+
+/* --- zusätzliche Prüfungen --- */
+const _checks=checks;
+checks=function(y){const out=_checks(y),Yr=S.years[y];if(!Yr)return out;try{extraChecks(out,y,Yr)}catch(e){console.error(e)}return out};
+function extraChecks(out,y,Yr){
+ const oL=id=>{const o=Yr.o.find(x=>x.id===id);return o?(o.kz||o.n||""):""};
+ const uL=u=>oL(u.o)+" · "+(WK(u)||TYPL[u.typ]||"Einheit");
+ const seen={};
+ Yr.u.filter(u=>vis(u.o)&&!u.lv&&GRP(u)!=="gar").forEach(u=>{
+  if(months(u,y)<=0)return;const k=u.o+"|"+nb(WK(u));if(P(wfY(u,Yr))>0||seen[k])return;seen[k]=1;
+  out.push({l:2,y,u,t:`${uL(u)}: Die Wohnfläche fehlt. Ohne sie verteilt die Betriebskostenabrechnung nichts und zeigt auch keinen Leerstand.`})});
+ Yr.o.filter(o=>vis(o.id)&&o.ab&&o.ab.slice(0,4)===String(y)).forEach(o=>{
+  Yr.u.filter(u=>u.o===o.id&&!u.lv).forEach(u=>{
+   if(!u.von)out.push({l:2,y,u,t:`${uL(u)}: Der Mietbeginn fehlt. Das Haus gehört dir erst seit ${dstr(o.ab)}. Ohne Mietbeginn fragt die App schon ab Januar nach Miete.`,fix:{y,id:u.id,k:"von",v:o.ab}});
+   else if(u.von<o.ab&&!(u.bis&&u.bis<o.ab))out.push({l:1,y,u,t:`${uL(u)}: Der Mietbeginn (${dstr(u.von)}) liegt vor dem Kauf (${dstr(o.ab)}). Die Miete davor gehörte dem Vorbesitzer.`,fix:{y,id:u.id,k:"von",v:o.ab}})})});
+ const hs=Yr.o.filter(o=>vis(o.id));
+ if(hs.length&&hs.every(o=>o.ab&&o.ab.slice(0,4)===String(y))){const mn=hs.map(o=>o.ab).sort()[0];
+  if(!Yr.bkStart||Yr.bkStart<mn)out.push({l:1,y,go:"abr",t:`Gekauft am ${dstr(mn)}, aber der Abrechnungszeitraum beginnt ${Yr.bkStart?"am "+dstr(Yr.bkStart):"noch am Jahresanfang"}. Sonst werden Kosten und Leerstand für die Zeit vor dem Kauf gerechnet.`,fixY:{y,k:"bkStart",v:mn}})}
+ hs.filter(o=>P(o.wf)>0).forEach(o=>{const g={};Yr.u.filter(u=>u.o===o.id&&GRP(u)!=="gar").forEach(u=>{const k=nb(WK(u));g[k]=Math.max(g[k]||0,P(wfY(u,Yr)))});
+  const s=Object.values(g).reduce((a,b)=>a+b,0);if(s>0&&Math.abs(s-P(o.wf))>0.5)out.push({l:1,y,go:"abr",t:`${oL(o.id)}: Die Wohnflächen der Wohnungen ergeben ${nfmt(s)} m², als Gesamtwohnfläche steht aber ${nfmt(P(o.wf))} m² im Haus.`})});
+ Yr.a.forEach(a=>{if(!P(a.b))return;if(!a.o||!Yr.o.some(o=>o.id===a.o))out.push({l:2,y,go:"aus",t:`Ausgabe „${a.a||"ohne Bezeichnung"}“ (${eur(P(a.b))}) gehört zu keinem Haus.`})});
+ hs.forEach(o=>{const h=Yr.a.filter(a=>a.o===o.id&&a.ul&&a.hz).reduce((s,a)=>s+P(a.b),0);if(h>0&&(!o.hvon||!o.hbis))out.push({l:1,y,go:"abr",t:`${oL(o.id)}: Heizkosten sind eingetragen, aber der Heizkosten-Zeitraum fehlt in der Abrechnung.`})});
+ hs.forEach(o=>{const hz=Yr.a.filter(a=>a.o===o.id&&a.ul&&a.hz).reduce((s,a)=>s+P(a.b),0);const pre=Yr.u.some(u=>u.o===o.id&&!u.lv&&GRP(u)!=="gar"&&P(u.hk)>0&&months(u,y)>0);
+  if(pre&&!(hz>0)&&!(P(o.hkg)>0))out.push({l:2,y,go:"abr",t:`${oL(o.id)}: Die Mieter zahlen Heizkosten-Vorauszahlungen, aber es sind keine Gesamtheizkosten eingetragen. Ohne sie bekommen alle Mieter die ganze Vorauszahlung zurück. Trag sie bei „Objekte für die Abrechnung“ ein oder als Ausgabe mit Umlage „Heizung“.`})});
+ {const be=Yr.bkEnd||(y+"-12-31");if(be>new Date().toISOString().slice(0,10)&&hs.length)out.push({l:1,y,go:"abr",t:`Der Abrechnungszeitraum endet erst am ${dstr(be)}. Kosten und Mieteingänge bis dahin sind noch nicht vollständig, die Abrechnung wäre nur ein Zwischenstand.`})}
+ const sa={};Yr.a.forEach(a=>{if(!P(a.b)||!a.a||!vis(a.o))return;const k=a.o+"|"+nb(a.a)+"|"+P(a.b);(sa[k]=sa[k]||[]).push(a)});
+ Object.values(sa).forEach(l=>{if(l.length>1)out.push({l:1,y,go:"aus",t:`${oL(l[0].o)} · „${l[0].a}“ mit ${eur(P(l[0].b))} steht ${l.length}-mal in den Ausgaben. Doppelt eingetragen?`})});
+ const sb={};BU(Yr).forEach(b=>{if(!P(b.b)||!b.d||!vis(b.o))return;const k=[b.d,P(b.b),b.t,b.u||"",b.a||""].join("|");(sb[k]=sb[k]||[]).push(b)});
+ Object.values(sb).forEach(l=>{if(l.length>1)out.push({l:1,y,bgo:`${y}|${l[0].t==="aus"?"a:"+l[0].a:"in"}`,t:`Zwei gleiche Zahlungen am ${dstr(l[0].d)} über ${eur(P(l[0].b))}. Doppelt eingetragen?`})})}
+
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-fixy],[data-tgo]");if(!b)return;
+ if(b.dataset.tgo){show(b.dataset.tgo);return}
+ const [y,k,v]=b.dataset.fixy.split("|"),Z=S.years[+y];if(!Z)return;const old=Z[k];Z[k]=v;save();renderAll();toast(`Abrechnungszeitraum beginnt jetzt am ${dstr(v)}.`,()=>{Z[k]=old})});
+
+/* Prüfliste auch oben in der Abrechnung */
+const _rChk=rChk;
+rChk=function(){_rChk();const el=$("abr-chk");if(!el)return;const L=allChecks();
+ el.innerHTML=L.length?`<details class="card" open><summary>Vor der Abrechnung prüfen: ${L.length} ${L.length===1?"Hinweis":"Hinweise"}</summary><div class="cbody">${chkHtml(L)}</div></details>`
+  :`<section class="card" style="border-left:4px solid var(--pos)"><b>✓ Keine offenen Hinweise.</b> <span class="sub">Die Angaben sehen vollständig aus. Du kannst die Abrechnung erstellen.</span></section>`};
+const _rAbr=rAbr;rAbr=function(){_rAbr();rChk()};
+
+function exU(u){try{return !!(u&&!u.lv&&u.bis&&u.bis<(Y().bkEnd||(S.cur+"-12-31")))}catch(e){return false}}
+/* --- Pflichtfelder markieren --- */
+function markReq(){try{const Yr=Y();if(!Yr)return;
+ const set=(i,bad,msg)=>{i.classList.toggle("req",!!bad);if(bad)i.title=msg;else if((i.title||"").indexOf("Pflichtfeld")===0)i.removeAttribute("title")};
+ document.querySelectorAll('input[data-t="u"][data-k="wf"]').forEach(i=>{const u=Yr.u.find(x=>x.id===i.dataset.id);
+  set(i,u&&!u.lv&&GRP(u)!=="gar"&&!P(wfY(u,Yr)),"Pflichtfeld: Ohne Wohnfläche wird in der Abrechnung nichts verteilt.");
+  if(u&&!has(u.wf)){const f=wfY(u,Yr);if(f)i.placeholder=f}});
+ document.querySelectorAll('input[data-t="u"][data-k="wk"]').forEach(i=>{const u=Yr.u.find(x=>x.id===i.dataset.id);set(i,u&&!WK(u),"Pflichtfeld: Name der Wohnung")});
+ document.querySelectorAll('input[data-dt="u"][data-k="von"]').forEach(i=>{const u=Yr.u.find(x=>x.id===i.dataset.id),o=u&&Yr.o.find(x=>x.id===u.o);
+  set(i,u&&!u.lv&&!u.von&&o&&o.ab&&o.ab.slice(0,4)===String(S.cur),"Pflichtfeld: Das Haus wurde dieses Jahr gekauft. Bitte Mietbeginn eintragen.")})}catch(e){}}
+const _lab=labelize;labelize=function(){_lab.apply(this,arguments);markReq()};
+document.addEventListener("input",e=>{const d=e.target.dataset;if(d&&d.t==="u")setTimeout(markReq,0)});
+
+/* --- Live-Prüfung beim Eintippen --- */
+document.addEventListener("change",e=>{const el=e.target,d=el.dataset;if(!d)return;const Yr=Y();
+ if(d.dt==="u"&&(d.k==="von"||d.k==="bis")){const u=Yr.u.find(x=>x.id===d.id);
+  if(u&&u.von&&u.bis&&u.bis<u.von){el.style.outline="2px solid var(--neg)";toast("Das Mietende liegt vor dem Mietbeginn. Bitte Datum prüfen.")}}
+ if(d.t==="u"&&["km","bk","hk"].includes(d.k)){const u=Yr.u.find(x=>x.id===d.id);if(!u)return;const v=P(el.value),km=P(u.km),bk=P(u.bk),hk=P(u.hk);let m="";
+  if(v<0)m="Der Betrag ist negativ. Stimmt das?";
+  else if(d.k==="km"&&v>4000&&GRP(u)==="wohn")m=`${eur(v)} Kaltmiete pro Monat ist für eine Wohnung sehr hoch. Ist es vielleicht der Jahresbetrag?`;
+  else if((d.k==="bk"||d.k==="hk")&&km>0&&v>km)m=`Die ${d.k==="bk"?"Nebenkosten":"Heizkosten"}-Vorauszahlung (${eur(v)}) ist höher als die Kaltmiete (${eur(km)}). Stimmt das?`;
+  else if(d.k==="km"&&v>0&&(bk>v||hk>v))m="Die Kaltmiete ist niedriger als die Nebenkosten. Stimmt das?";
+  if(m)toast(m)}
+ if(d.t==="a"&&d.k==="b"){const a=Yr.a.find(x=>x.id===d.id);if(a&&P(a.b)&&a.a&&Yr.a.some(x=>x!==a&&x.o===a.o&&nb(x.a)===nb(a.a)&&P(x.b)===P(a.b)))toast(`„${a.a}“ mit ${eur(P(a.b))} gibt es schon einmal. Doppelt eingetragen?`)}});
+
+let KD=false;const _show=show;show=function(){if(KD){KD=false;renderAll()}return _show.apply(this,arguments)};
+/* --- Kaufdatum: Mietbeginn und Abrechnungszeitraum automatisch --- */
+document.addEventListener("change",e=>{const d=e.target.dataset;if(!d||d.dt!=="o"||d.k!=="ab")return;
+ const Yr=Y(),o=Yr.o.find(x=>x.id===d.id);if(!o||!o.ab||o.ab.slice(0,4)!==String(S.cur))return;
+ const oldS=Yr.bkStart,ch=[];let n=0,per=false;
+ Yr.u.forEach(u=>{if(u.o===o.id&&!u.lv&&!u.von){u.von=o.ab;ch.push(u);n++}});
+ if(Yr.o.every(x=>x.ab&&x.ab.slice(0,4)===String(S.cur))){const mn=Yr.o.map(x=>x.ab).sort()[0];if(!Yr.bkStart||Yr.bkStart<mn){Yr.bkStart=mn;per=true}}
+ if(!n&&!per)return;save();KD=true;try{rChk()}catch(x){}
+ toast(`Kaufdatum übernommen:${n?` Mietbeginn bei ${n} ${n===1?"Zeile":"Zeilen"} auf ${dstr(o.ab)} gesetzt.`:""}${per?` Abrechnungszeitraum beginnt am ${dstr(Yr.bkStart)}.`:""}`,()=>{ch.forEach(u=>{u.von=""});Yr.bkStart=oldS})});
+(function(){const _rI=rAbrInputs;rAbrInputs=function(){_rI();try{const Yr=Y(),y=S.cur,hs=Yr.o.filter(o=>vis(o.id));
+ if(hs.length&&hs.every(o=>o.ab&&o.ab.slice(0,4)===String(y))&&$("abr-s")&&!Yr.bkStart)$("abr-s").placeholder=dstr(hs.map(o=>o.ab).sort()[0])}catch(e){}}})();
+
+document.addEventListener("change",e=>{const d=e.target.dataset;if(d&&(d.t==="u"||d.dt==="u"||d.t==="o"||d.dt==="o"||d.t==="a"))setTimeout(()=>{try{rChk()}catch(x){}},0)});
+/* --- Einrichtungs-Assistent --- */
+function wizRow(i){return `<div class="wz" data-wz="${i}" style="border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px">
+ <div class="row"><label>Einheit (fester Name) *<input data-w="wk" placeholder="z. B. EG links"></label><label>Mieter<input data-w="mt" placeholder="Name des Mieters"></label></div>
+ <div class="row"><label>Wohnfläche m² *<input data-w="wf" inputmode="decimal"></label><label>Mietbeginn<input data-w="von" inputmode="numeric" placeholder="TT.MM.JJJJ"></label></div>
+ <div class="row"><label>Kaltmiete €/Monat<input data-w="km" inputmode="decimal"></label><label>Nebenkosten €/Monat<input data-w="bk" inputmode="decimal"></label><label>Heizkosten €/Monat<input data-w="hk" inputmode="decimal"></label></div>
+ <label style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" data-w="lv"> Wohnung steht leer</label></div>`}
+function openWizard(){const M=$("modal"),y=S.cur;let n=1;
+ M.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="wz-h"><h2 id="wz-h">Neues Haus einrichten · ${y}</h2>
+ <p class="sub">Trag alles auf einer Seite ein. Das Haus und die Wohnungen werden danach angelegt. Felder mit * sind Pflicht (bei leeren Wohnungen entfällt die Wohnfläche).</p>
+ <h3 style="margin:12px 0 0;font-size:15px">1. Das Haus</h3>
+ <div class="row"><label>Kürzel<input id="wz-kz" maxlength="12" placeholder="z. B. HS7"></label><label>Name / Anschrift *<input id="wz-n" placeholder="Straße Nr., Ort"></label></div>
+ <div class="row"><label>Kaufdatum (Eigentümer seit)<input id="wz-ab" inputmode="numeric" placeholder="TT.MM.JJJJ"></label><label>Gebäudewert (AfA-Basis) €<input id="wz-b" inputmode="decimal"></label><label>AfA-Satz %<input id="wz-s" inputmode="decimal" value="2"></label></div>
+ <h3 style="margin:14px 0 0;font-size:15px">2. Die Wohnungen</h3><div id="wz-rows">${wizRow(0)}</div>
+ <p style="margin-top:10px"><button class="btn" id="wz-add">+ Wohnung</button></p>
+ <p class="sub" id="wz-w" style="color:var(--neg)"></p>
+ <p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn fill" id="wz-go">Fertig, anlegen</button><button class="btn" id="wz-x">Abbrechen</button></p></div>`;
+ M.hidden=false;
+ M.querySelectorAll('input[placeholder="TT.MM.JJJJ"]').forEach(i=>{i.placeholder="z. B. 01.09.2026"});
+ const rowsEl=$("wz-rows"),syncVon=()=>{const ab=parseDE($("wz-ab").value);if(ab&&ab.slice(0,4)===String(y))rowsEl.querySelectorAll('[data-w="von"]').forEach(i=>{if(!i.dataset.touched)i.value=dstr(ab)})};
+ $("wz-ab").addEventListener("change",syncVon);rowsEl.addEventListener("input",e=>{if(e.target.dataset.w==="von")e.target.dataset.touched="1"});
+ $("wz-add").onclick=()=>{rowsEl.insertAdjacentHTML("beforeend",wizRow(n++));syncVon()};
+ $("wz-x").onclick=closeModal;M.onclick=e=>{if(e.target===M)closeModal()};
+ $("wz-go").onclick=()=>{const w=[],ab=parseDE($("wz-ab").value),nm=$("wz-n").value.trim(),kz=$("wz-kz").value.trim();
+  if(!nm&&!kz)w.push("Bitte Hausname oder Kürzel eintragen.");if(ab===null)w.push("Kaufdatum bitte als TT.MM.JJJJ eingeben.");
+  const us=[...rowsEl.querySelectorAll(".wz")].map(r=>{const g=k=>{const i=r.querySelector(`[data-w="${k}"]`);return i?(i.type==="checkbox"?i.checked:i.value.trim()):""};return {wk:g("wk"),mt:g("mt"),wf:g("wf"),von:parseDE(g("von")),km:g("km"),bk:g("bk"),hk:g("hk"),lv:g("lv")}});
+  us.forEach((u,i)=>{if(!u.wk)w.push(`Wohnung ${i+1}: Bitte einen Namen eintragen.`);if(u.von===null)w.push(`Wohnung ${i+1}: Mietbeginn bitte als TT.MM.JJJJ.`);if(!u.lv&&!P(u.wf))w.push(`Wohnung ${i+1}: Wohnfläche fehlt (Pflicht für die Abrechnung).`)});
+  M.querySelectorAll(".req").forEach(i=>i.classList.remove("req"));
+  if(!nm&&!kz)$("wz-n").classList.add("req");if(ab===null)$("wz-ab").classList.add("req");
+  [...rowsEl.querySelectorAll(".wz")].forEach((r,i)=>{const u=us[i];if(!u)return;if(!u.wk)r.querySelector('[data-w="wk"]').classList.add("req");if(u.von===null)r.querySelector('[data-w="von"]').classList.add("req");if(!u.lv&&!P(u.wf))r.querySelector('[data-w="wf"]').classList.add("req")});
+  $("wz-w").innerHTML=w.join("<br>");if(w.length){const f=M.querySelector(".req");if(f)f.focus();return}
+  const Yr=Y(),o={id:uid(),n:nm,kz,ab:ab||"",afaB:$("wz-b").value.trim(),afaS:$("wz-s").value.trim()||"2",afa:"",adr:nm};
+  Yr.o.push(o);Yr.a.push(...seedA(o.id));
+  us.forEach(u=>Yr.u.push({id:uid(),o:o.id,typ:"Wohnung",bez:u.wk,wk:u.wk,mt:u.lv?"":u.mt,lv:!!u.lv,von:u.von||(ab&&ab.slice(0,4)===String(y)?ab:""),bis:"",km:u.lv?"":u.km,bk:u.lv?"":u.bk,hk:u.lv?"":u.hk,wf:u.wf,an:u.lv?"":u.mt}));
+  if(ab&&ab.slice(0,4)===String(y)&&Yr.o.every(x=>x.ab&&x.ab.slice(0,4)===String(y))){const mn=Yr.o.map(x=>x.ab).sort()[0];if(!Yr.bkStart||Yr.bkStart<mn)Yr.bkStart=mn}
+  if(START){START=false;S.sel=o.id}syncBez();closeModal();save();renderAll();show("imm");toast(`Haus „${kz||nm}“ mit ${us.length} ${us.length===1?"Wohnung":"Wohnungen"} angelegt.`)};
+ setTimeout(()=>{const f=$("wz-n");if(f)f.focus()},50)}
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-wiz]"))openWizard()});
+
+/* --- Sicherungen im Browser, Verlauf, Erinnerung --- */
+const SNK=KEY+"-snaps";
+function snapsGet(){try{return JSON.parse(localStorage.getItem(SNK)||"[]")}catch(e){return []}}
+let SNT=0;try{const l0=snapsGet()[0];if(l0)SNT=l0.t}catch(e){}
+function snapNow(force){try{if(!force&&Date.now()-SNT<10*60*1000)return;const L=snapsGet(),last=L[0],s=JSON.stringify(S);
+ if(last&&last.s===s)return;SNT=Date.now();
+ L.unshift({t:Date.now(),s});while(L.length>6)L.pop();
+ try{localStorage.setItem(SNK,JSON.stringify(L))}catch(e){L.length=Math.min(L.length,2);try{localStorage.setItem(SNK,JSON.stringify(L))}catch(e2){}}}catch(e){}}
+const _save=save;save=function(){_save.apply(this,arguments);snapNow(false)};
+addEventListener("pagehide",()=>snapNow(true));document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")snapNow(true)});
+function snapInfo(s){try{const j=JSON.parse(s),Y0=j.years[j.cur]||{},u=(Y0.u||[]).length,a=(Y0.a||[]).length;return `${Y0.o?Y0.o.length:0} Häuser, ${u} Mietzeilen, ${a} Ausgaben (${j.cur})`}catch(e){return ""}}
+function openSnaps(){const M=$("modal"),L=snapsGet(),fm=t=>new Date(t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"});
+ M.innerHTML=`<div role="dialog" aria-modal="true"><h2>Verlauf und Sicherungen</h2><p class="sub">Die App legt im Browser automatisch Zwischenstände an, spätestens alle 10 Minuten und beim Schließen. Hier kannst du einen früheren Stand zurückholen. Der jetzige Stand wird vorher selbst gesichert. Das ersetzt nicht „Daten sichern“ in eine Datei.</p>
+ ${L.length?L.map((x,i)=>`<div class="chk l1" style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span class="t"><b>${fm(x.t)}</b><br><span class="sub">${esc(snapInfo(x.s))}</span></span><button class="btn" data-snap="${i}">Zurückholen</button></div>`).join(""):`<p>Noch keine Zwischenstände.</p>`}
+ <p style="margin-top:12px"><button class="btn" id="sn-x">Schließen</button></p></div>`;M.hidden=false;
+ $("sn-x").onclick=closeModal;M.onclick=e=>{if(e.target===M)closeModal();const b=e.target.closest&&e.target.closest("[data-snap]");if(!b)return;
+  const x=snapsGet()[+b.dataset.snap];if(!x)return;snapNow(true);try{const ns=JSON.parse(x.s);if(!ns||!ns.years)throw 0;S=ns;if(!S.years[S.cur])S.cur=+Object.keys(S.years)[0];ensureUnits();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e2){}closeModal();renderAll();show(S.tab||"home");toast("Stand vom "+fm(x.t)+" zurückgeholt.")}catch(err){toast("Dieser Stand konnte nicht geladen werden.")}}}
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-snaps]"))openSnaps()});
+
+(function(){const b=$("data-save");if(!b)return;const o=b.onclick;b.onclick=function(ev){const r=o&&o.call(this,ev);S.lastBackup=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}rBkWarn();return r}})();
+function rBkWarn(){const el=$("bk-warn");if(!el)return;try{const Yr=Y(),used=Yr&&(Yr.u.length>1||Yr.a.some(a=>P(a.b))||Object.keys(Yr.pay||{}).length);
+ const auto=$("fsbar")&&/Speichert automatisch/.test($("fsbar").textContent);const age=S.lastBackup?(Date.now()-S.lastBackup)/864e5:99;
+ if(!used||auto||age<7||(S.bkSnooze&&Date.now()<S.bkSnooze)){el.hidden=true;return}
+ el.hidden=false;el.innerHTML=`<span>${S.lastBackup?"Die letzte Datensicherung ist "+Math.floor(age)+" Tage her.":"Du hast noch keine Datensicherung in eine Datei gemacht."} Bitte „Daten sichern“ antippen.</span> <button class="btn fill" id="bk-now">Jetzt sichern</button> <button class="btn" id="bk-later">Morgen erinnern</button>`;
+ $("bk-now").onclick=()=>{$("data-save").click()};$("bk-later").onclick=()=>{S.bkSnooze=Date.now()+864e5;save();rBkWarn()}}catch(e){}}
+
+/* --- Aktualisieren-Button --- */
+async function appUpdate(){try{save()}catch(e){}snapNow(true);toast("Aktualisiere …");
+ try{if(navigator.serviceWorker){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}}catch(e){}
+ try{if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){}
+ setTimeout(()=>{try{const u=new URL(location.href);u.searchParams.set("u",Date.now());location.replace(u.toString())}catch(e){renderAll();toast("Neu berechnet. Die Seite selbst konnte hier nicht neu geladen werden.")}},350)}
+
+
+const _rO=rObjbar;rObjbar=function(){_rO();const bar=document.querySelector("#objbar .objbar");if(bar&&!bar.querySelector("[data-upd]"))bar.insertAdjacentHTML("beforeend",`<button class="btn" data-upd title="Lädt die neueste Version der App. Deine Daten bleiben erhalten.">⟳ Aktualisieren</button>`)};
+const _rS=rStart;rStart=function(){_rS();const st=$("st-in");{const g=st&&st.querySelector(".ogrid");if(g){const key=c=>c.classList.contains("all")?2:c.querySelector(".ochip.r")?0:1;[...g.children].map((c,i)=>[c,i]).sort((a,b)=>key(a[0])-key(b[0])||a[1]-b[1]).forEach(x=>g.appendChild(x[0]))}}if(st&&!st.querySelector("[data-wiz]")&&!Y().o.length)st.insertAdjacentHTML("afterbegin",`<section class="card"><h2>Erste Schritte</h2><p class="sub">Neu hier? Der Assistent legt ein Haus mit allen Wohnungen und Mietern in einem Schritt an.</p><p><button class="btn fill" data-wiz>Neues Haus einrichten (Assistent)</button></p></section>`);
+  if(st&&!st.querySelector("[data-upd]"))st.insertAdjacentHTML("beforeend",`<p style="margin-top:14px">${Y().o.length?`<button class="btn" data-wiz>+ Neues Haus einrichten</button> `:""}<button class="btn" data-upd>⟳ Aktualisieren</button> <span class="sub">Version ${APP_VER}</span></p>`)};
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-upd]"))appUpdate()});
+/* --- Bedienelemente einbauen --- */
+(function(){
+ const w=document.createElement("div");w.id="bk-warn";w.className="localbar";w.hidden=true;const fb=$("fsbar");if(fb)fb.after(w);
+ const menu=document.querySelector(".ymenu > div");
+ if(menu){const p=document.createElement("p");p.style.marginTop="10px";p.innerHTML=`<button class="btn" data-wiz>Neues Haus einrichten (Assistent)</button> <button class="btn" data-snaps>Verlauf und Sicherungen</button> <button class="btn" data-upd>⟳ App aktualisieren</button><br><span class="sub">Version ${APP_VER}</span>`;menu.appendChild(p)}
+ ["v-obj","v-imm"].forEach(id=>{const v=$(id);if(v){const d=document.createElement("p");d.innerHTML=`<button class="btn fill" data-wiz>Neues Haus einrichten (Assistent)</button>`;v.prepend(d)}});
+ const va=$("v-abr");if(va){const d=document.createElement("div");d.id="abr-chk";va.prepend(d)}
+ const st=document.createElement("style");st.textContent=`input.req,select.req{outline:2px solid var(--neg);background:color-mix(in srgb,var(--neg) 10%,transparent)}.objbar [data-upd]{margin-left:auto}#bk-warn{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:49}#bk-warn[hidden]{display:none}`;document.head.appendChild(st);
+ try{const q=new URL(location.href);if(q.searchParams.has("u")){q.searchParams.delete("u");history.replaceState(null,"",q.toString())}}catch(e){}
+})();
+/* ===== Gestaltung v3: Hinweise kompakt, leere Karten, Startseite, Schrittband ===== */
+chkHtml=function(L,showY){return L.map(c=>{const t=String(c.t),i=t.indexOf(". "),sp=i>0&&i<t.length-3,head=sp?t.slice(0,i+1):t,tail=sp?t.slice(i+2):"";
+ const act=c.fix?`<button class="btn fill" data-fix="${c.fix.y}|${c.fix.id}|${c.fix.k}|${c.fix.v}">Korrigieren</button>`:c.fixY?`<button class="btn fill" data-fixy="${c.fixY.y}|${c.fixY.k}|${c.fixY.v}">Korrigieren</button>`:"";
+ const go=c.bgo?`<button class="lnk" data-bugo="${c.bgo}">Ansehen</button>`:c.m?`<button class="lnk" data-pgo="${c.y}|${c.m}">Ansehen</button>`:c.go?`<button class="lnk" data-tgo="${c.go}">Ansehen</button>`:c.u?`<button class="lnk" data-cgo="${c.y}|${c.u.id}">Ansehen</button>`:"";
+ return `<div class="chk l${c.l}${chkDone(c)?" done":""}"><i class="dot" aria-hidden="true"></i><label class="cokl" title="Als geprüft markieren"><input type="checkbox" data-cok="${esc(chkKey(c))}"${chkDone(c)?" checked":""} aria-label="Als geprüft markieren"><span>geprüft</span></label><span class="t">${showY?`<span class="y">${c.y}</span>`:""}<b>${esc(head)}</b>${tail?` <span class="mt">${esc(tail)}</span><button type="button" class="more-b" data-mt>mehr</button>`:""}</span>${act}${go}</div>`}).join("")};
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-mt]");if(!b)return;const r=b.closest(".chk");if(!r)return;r.classList.toggle("open");b.textContent=r.classList.contains("open")?"weniger":"mehr"});
+
+const _rH=rHome;rHome=function(){_rH.apply(this,arguments);try{homeTidy()}catch(e){console.error(e)}};
+function homeTidy(){
+ const el=$("h-chk");if(el){const L=allChecks(),R=L.filter(c=>c.l===2),G=L.filter(c=>c.l!==2);
+  el.innerHTML=(L.length?chkHtml(R)+(G.length?`<details class="more"><summary>${G.length} ${G.length===1?"weiterer Hinweis":"weitere Hinweise"} ansehen</summary><div class="cbody">${chkHtml(G)}</div></details>`:""):`<div class="ok-box">✓ Alles stimmig. Keine Widersprüche gefunden.</div>`)+doneBox(doneChecks())}
+ const sec=id=>$(id)&&$(id).closest("section");
+ const so=sec("h-open");if(so){const e=!$("h-open").querySelector(".mrow");so.classList.toggle("mini",e);if(e)$("h-open").innerHTML=`<p class="ok-line">Keine offenen Mieten</p>`}
+ const sn=sec("h-next");if(sn)sn.classList.toggle("mini",!$("h-next").querySelector(".nxt"));
+ const sl=sec("h-lv");if(sl){const e=!$("h-lv").querySelector("table");sl.classList.toggle("mini",e);if($("h-lvs"))$("h-lvs").hidden=e;if(e)$("h-lv").innerHTML=`<p class="ok-line">Keine Leerstände in ${S.cur}</p>`}}
+
+/* Pflichtfelder: kurze rote Zeile unter dem Feld */
+(function(){const _m=markReq;markReq=function(){_m();try{document.querySelectorAll("input.req").forEach(i=>{if(i.closest("#modal"))return;const n=i.nextElementSibling;if(!(n&&n.classList&&n.classList.contains("reqmsg"))){const t=(i.title||"").replace(/^Pflichtfeld: /,"").split(". ")[0].replace(/\.$/,"");if(t)i.insertAdjacentHTML("afterend",`<span class="reqmsg">${esc(t)}</span>`)}});
+ document.querySelectorAll(".reqmsg").forEach(m=>{const p=m.previousElementSibling;if(!p||!p.classList||!p.classList.contains("req"))m.remove()})}catch(e){}}})();
+
+/* Schrittband und eingeklappte Briefvorschau in der Abrechnung */
+(function(){const va=$("v-abr");if(!va)return;
+ const nav=document.createElement("div");nav.className="stepsbar";nav.setAttribute("role","group");nav.setAttribute("aria-label","Schritte der Abrechnung");
+ nav.innerHTML=[["1","Prüfen","abr-chk"],["2","Eingaben","abr-s"],["3","Ergebnis","summary"],["4","Exportieren","pdf"]].map(s=>`<button type="button" data-step="${s[2]}"><i>${s[0]}</i>${s[1]}</button>`).join("");
+ const ac=$("abr-chk");if(ac)ac.before(nav);else va.prepend(nav);
+ const sh=$("sheets");if(sh){const d=document.createElement("details");d.className="card";d.innerHTML='<summary>Briefe ansehen (Vorschau)</summary><div class="cbody"></div>';sh.before(d);d.querySelector(".cbody").appendChild(sh)}
+ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-step]");if(!b)return;const t=$(b.dataset.step);if(t)(t.closest("section,details")||t).scrollIntoView({behavior:"smooth",block:"start"})})})();
+function scrollShadow(){document.querySelectorAll(".scroll").forEach(e=>{const o=e.scrollWidth>e.clientWidth+2;e.classList.toggle("ovr",o&&e.scrollLeft+e.clientWidth<e.scrollWidth-2);e.classList.toggle("ovl",o&&e.scrollLeft>2)})}
+(function(){const _l2=labelize;labelize=function(){_l2.apply(this,arguments);try{scrollShadow()}catch(e){}};addEventListener("resize",scrollShadow);document.addEventListener("scroll",e=>{if(e.target.classList&&e.target.classList.contains("scroll"))scrollShadow()},true);document.addEventListener("toggle",()=>setTimeout(scrollShadow,0),true)})();
+renderAll();rBkWarn();
 </script>
 </body>
 </html>
