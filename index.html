@@ -1340,12 +1340,13 @@ const BKDEF={firma:"",kontakt:"",ort:"",abs:"",sig:"",ki:"",bank:"",iban:"",bic:
 function G(){S.bk=S.bk||{};const g=S.bk;Object.keys(BKDEF).forEach(k=>{if(g[k]===undefined)g[k]=BKDEF[k]});if(g.erl===undefined)g.erl="";if(g.schl===undefined)g.schl="";if(g.schl2===undefined)g.schl2="";return g}
 const nstr=v=>has(v)?String(P(v)):"";
 function hzSum(id){return Y().a.filter(a=>a.o===id&&a.ul&&a.hz).reduce((s,a)=>s+P(a.b),0)}
-function wfSum(id){const y=S.cur,g={};Y().u.filter(u=>u.o===id&&GRP(u)!=="gar").forEach(u=>{const k=(u.bez||"").trim().toLowerCase()||u.id;(g[k]=g[k]||[]).push({a:u.von||y+"-01-01",b:u.bis||y+"-12-31",f:P(u.wf)})});
+function wfOf(u){if(has(u.wf))return u.wf;const k=nb(WK(u)),r=Y().u.find(x=>x.o===u.o&&nb(WK(x))===k&&has(x.wf));return r?r.wf:""}
+function wfSum(id){const y=S.cur,g={};Y().u.filter(u=>u.o===id&&GRP(u)!=="gar").forEach(u=>{const k=nb(WK(u))||u.id;(g[k]=g[k]||[]).push({a:u.von||y+"-01-01",b:u.bis||y+"-12-31",f:P(wfOf(u))})});
  let t=0;Object.values(g).forEach(rs=>{let mx=0;rs.forEach(r=>{const at=rs.filter(x=>x.a<=r.a&&x.b>=r.a).reduce((s,x)=>s+x.f,0);if(at>mx)mx=at});t+=mx});return Math.round(t*100)/100}
 function toBK(){const Yr=Y(),y=S.cur,g=G();
  return Object.assign({},g,{cur:y,sel:S.sel,start:Yr.bkStart||y+"-01-01",end:Yr.bkEnd||y+"-12-31",dat:Yr.dat||"",nf:g.nf,
   o:Yr.o.map(o=>({id:o.id,n:o.adr||((o.kz?o.kz+" ":"")+(o.n||"")),f:has(o.wf)?nstr(o.wf):String(wfSum(o.id)),hvon:o.hvon||"",hbis:o.hbis||"",hk:has(o.hkg)?nstr(o.hkg):(hzSum(o.id)?String(hzSum(o.id)):"")})),
-  m:Yr.u.filter(u=>GRP(u)!=="gar").map(u=>{const ch=!!(u.chg&&(has(u.bk2)||has(u.hk2)));return {o:u.o,e:WK(u)||TYPL[u.typ]||"",en:WK(u)||TYPL[u.typ]||"",n:u.lv?"Leerstand":((u.an||"").split(/\n|,/)[0].trim()||u.mt||"Mieter "+(u.bez||TYPL[u.typ]||"")),lv:!!u.lv,nb:false,f:nstr(u.wf),von:u.von||"",bis:u.bis||"",bb:nstr(u.bk),hb:nstr(u.hk),an:u.an||"",bn:nstr(u.bn),hn:nstr(u.hn),hk:!u.lv?nstr(u.hkM):"",cd:ch?u.chg:"",cb:ch?nstr(u.bk2):"",ch:ch?nstr(u.hk2):"",pb:nstr(u.bkIst),ph:nstr(u.hkIst)}}),
+  m:Yr.u.filter(u=>GRP(u)!=="gar").map(u=>{const ch=!!(u.chg&&(has(u.bk2)||has(u.hk2)));return {o:u.o,e:WK(u)||TYPL[u.typ]||"",en:WK(u)||TYPL[u.typ]||"",n:u.lv?"Leerstand":((u.an||"").split(/\n|,/)[0].trim()||u.mt||"Mieter "+(u.bez||TYPL[u.typ]||"")),lv:!!u.lv,nb:false,f:nstr(wfOf(u)),von:u.von||"",bis:u.bis||"",bb:nstr(u.bk),hb:nstr(u.hk),an:u.an||"",bn:nstr(u.bn),hn:nstr(u.hn),hk:!u.lv?nstr(u.hkM):"",cd:ch?u.chg:"",cb:ch?nstr(u.bk2):"",ch:ch?nstr(u.hk2):"",pb:nstr(u.bkIst),ph:nstr(u.hkIst)}}),
   k:Yr.a.filter(a=>a.ul&&!a.hz&&P(a.b)).map(a=>({o:a.o,a:a.a||"Ohne Bezeichnung",b:String(P(a.b)),t:"b"}))})}
 function rAbrInputs(){const Yr=Y(),g=G(),y=S.cur;
  $("abr-yr").textContent=y;
@@ -1358,7 +1359,7 @@ function rAbrInputs(){const Yr=Y(),g=G(),y=S.cur;
  $("abr-m").innerHTML=us.length?`<table><tr><th>Einheit, Mieter</th><th class="n">Wohnfläche m²</th><th>Briefanschrift</th><th class="n">Heizkosten lt. Heizkostenabrechnung €</th><th class="n">BK neu ab ${y+1} €/Monat</th><th class="n">HK neu ab ${y+1} €/Monat</th></tr>`+us.map(u=>`<tr><td>${esc(oName(u.o))}<br><span class="sub">${esc([u.bez||TYPL[u.typ],u.lv?"Leerstand":""].filter(Boolean).join(", "))}</span></td><td>${inp("u",u,"wf",{num:1,al:"Wohnfläche"})}</td><td>${!u.lv?`<textarea rows="3" data-t="u" data-id="${u.id}" data-k="an" placeholder="Name&#10;Straße Hausnr.&#10;PLZ Ort" aria-label="Briefanschrift" style="min-width:190px;resize:vertical">${esc(u.an)}</textarea>`:'<span class="sub">Leerstand</span>'}</td><td>${!u.lv?inp("u",u,"hkM",{num:1,al:"Heizkosten Mieter"}):""}</td><td>${!u.lv?inp("u",u,"bn",{num:1,al:"BK neu",ph:"automatisch"}):""}</td><td>${!u.lv?inp("u",u,"hn",{num:1,al:"HK neu",ph:"automatisch"}):""}</td></tr>`).join("")+`</table>`:`<p class="empty">Noch keine Wohnungen unter Einnahmen.</p>`;
  labelize();
 }
-function rAbrOut(){document.querySelectorAll('#abr-o input[data-k="wf"]').forEach(i=>{i.placeholder="Summe "+String(wfSum(i.dataset.id)).replace(".",",")});try{BKE.set(toBK());BKE.renderOut()}catch(e){$("check").textContent="Abrechnung konnte nicht berechnet werden: "+(e&&e.message||e)}}
+function rAbrOut(){document.querySelectorAll('#abr-o input[data-k="wf"]').forEach(i=>{i.placeholder="Summe "+String(wfSum(i.dataset.id)).replace(".",",")});try{BKE.set(toBK());BKE.renderOut();const nw=[...new Set(Y().u.filter(u=>vis(u.o)&&GRP(u)!=="gar"&&!P(wfOf(u))).map(u=>WK(u)))];if(nw.length)$("check").textContent+=" ACHTUNG: Bei "+nw.join(", ")+" fehlt die Wohnfläche (m²). Ohne sie werden weder Kosten noch Leerstand verteilt. Bitte oben unter „Mieter“ ergänzen."}catch(e){$("check").textContent="Abrechnung konnte nicht berechnet werden: "+(e&&e.message||e)}}
 function rAbr(){rAbrInputs();rAbrOut()}
 let abrT=null;const abrLater=()=>{if(S.tab!=="abr")return;clearTimeout(abrT);abrT=setTimeout(rAbrOut,350)};
 document.addEventListener("input",e=>{const d=e.target.dataset;if(d&&d.g){G()[d.g]=e.target.value;save();abrLater();return}if(d&&(d.t||d.dt))abrLater()});
@@ -1729,9 +1730,9 @@ function mwOpen(id){const Yr=Y(),y=S.cur,u=Yr.u.find(x=>x.id===id);if(!u)return;
  $("mw-go").onclick=()=>{const p=plan();if(!p)return;syncBez();const before=JSON.parse(JSON.stringify(u)),add=[];
   const un=($("mw-e").value.trim()||WK(u));
   Object.values(S.years).forEach(Z=>Z.u.forEach(r=>{if(r.o===u.o&&(r===u||nb(WK(r))===nb(WK(u)))){if(r.mt===undefined)r.mt=(!r.lv&&!r.wk&&r.bez&&nb(r.bez)!==nb(un))?r.bez:"";r.wk=un}}));syncBez();
-  if(!lv){u.bis=p.a;const ls=addD(p.a,1),le=p.n?addD(p.n,-1):"";if(ls<=ye&&(!p.n||le>=ls))add.push({id:uid(),o:u.o,typ:u.typ,bez:un,wk:un,mt:"",lv:true,von:ls,bis:p.n&&le<=ye?le:"",km:"",bk:"",hk:""})}
+  if(!lv){u.bis=p.a;const ls=addD(p.a,1),le=p.n?addD(p.n,-1):"";if(ls<=ye&&(!p.n||le>=ls))add.push({id:uid(),o:u.o,typ:u.typ,bez:un,wk:un,mt:"",lv:true,von:ls,bis:p.n&&le<=ye?le:"",km:"",bk:"",hk:"",wf:wfOf(u)})}
   else u.bis=addD(p.n,-1);
-  if(p.nIn)add.push({id:uid(),o:u.o,typ:u.typ,bez:un,wk:un,mt:$("mw-b").value.trim(),lv:false,von:p.n,bis:"",km:$("mw-km").value.trim(),bk:$("mw-bk").value.trim(),hk:$("mw-hk").value.trim(),ust:u.ust&&GRP(u)==="gew"?true:undefined});
+  if(p.nIn)add.push({id:uid(),o:u.o,typ:u.typ,bez:un,wk:un,mt:$("mw-b").value.trim(),lv:false,von:p.n,bis:"",wf:wfOf(u),km:$("mw-km").value.trim(),bk:$("mw-bk").value.trim(),hk:$("mw-hk").value.trim(),ust:u.ust&&GRP(u)==="gew"?true:undefined});
   const i=Yr.u.findIndex(x=>x.id===u.id);Yr.u.splice(i+1,0,...add);closeModal();save();renderAll();
   const ids=add.map(x=>x.id);
   toast("Mieterwechsel eingetragen.",()=>{const Z=S.years[y];if(!Z)return;Z.u=Z.u.filter(x=>!ids.includes(x.id));const o=Z.u.find(x=>x.id===before.id);if(o)Object.assign(o,before)})};
